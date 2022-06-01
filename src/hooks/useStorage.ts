@@ -7,13 +7,14 @@ import {
 	ListResult,
 	StorageError,
 	deleteObject,
-	getBlob
+	getBlob,
+	getMetadata
 } from "firebase/storage";
 import { useMutation, useQueryClient, useQuery } from "react-query";
 
 import { useAuth } from "../components/providers/auth";
 import { pushErrorAlert } from "utils/alert";
-import useProjectName from "./useProjectName";
+import projectName from "../utils/projectName";
 
 // default markdown file for new project
 const emptyMarkdownB64 =
@@ -24,15 +25,15 @@ const useStorage = () => {
 	const storage = getStorage();
 	const queryClient = useQueryClient();
 	const listRef = ref(storage, `/${user?.uid}`);
-	const projectName = useProjectName();
+	const pjName = projectName();
 
 	const uploadImage = useCallback(
 		(dataURL: string, ext: string) => {
 			const imageRef = ref(
 				storage,
-				`/${user?.uid}/${projectName}/${Date.now()}.${ext}`
+				`/${user?.uid}/${pjName}/${Date.now()}.${ext}`
 			);
-			console.log(`/${user?.uid}/${projectName}/${Date.now()}.${ext}`);
+			console.log(`/${user?.uid}/${pjName}/${Date.now()}.${ext}`);
 
 			return uploadString(imageRef, dataURL, "data_url", {
 				customMetadata: {
@@ -40,39 +41,51 @@ const useStorage = () => {
 				}
 			});
 		},
-		[projectName, storage, user?.uid]
+		[pjName, storage, user?.uid]
 	);
 
 	// const deleteImages;
 
 	const getProject = useCallback(async () => {
 		if (user) {
-			const docRef = ref(storage, `${user?.uid}/${projectName}/index.md`);
+			const docRef = ref(storage, `${user?.uid}/${pjName}/index.md`);
 			return getBlob(docRef);
 		}
-	}, [user, storage, projectName]);
+	}, [user, storage, pjName]);
 
 	const useProjectList = () => {
-		return useQuery(["projects"], () => list(listRef), {
-			enabled: !!user,
-			onError: () => pushErrorAlert("Service is not available!")
-		});
+		return useQuery(
+			["projects"],
+			async () => {
+				const projectList = await list(listRef);
+				const metas = projectList.prefixes.map(item => {
+					return getMetadata(ref(storage, `${item.fullPath}/index.md`));
+				});
+				return Promise.all(metas);
+			},
+			{
+				enabled: !!user,
+				onError: () => pushErrorAlert("Service is not available!")
+			}
+		);
 	};
 
 	const useCreateProject = () => {
 		return useMutation(
-			(projectName: string) => {
+			(pjName: string) => {
 				const projectCache = queryClient.getQueryData([
 					"projects"
 				]) as ListResult;
-				const quota = 5 - projectCache?.prefixes.length;
+				const quota = 5 - projectCache?.prefixes?.length || 5;
 
-				const docName = `${projectName}:${Date.now()}`;
+				const docName = encodeURIComponent(pjName);
 				const docRef = ref(storage, `/${user?.uid}/${docName}/index.md`);
+
 				return uploadString(docRef, emptyMarkdownB64, "data_url", {
 					customMetadata: {
 						quota: quota.toString(),
-						type: "create"
+						type: "create",
+						lastModified: Date.now().toString()
 					}
 				});
 			},
@@ -94,18 +107,22 @@ const useStorage = () => {
 	const useDeleteProject = () => {
 		return useMutation(
 			(projects: string[]) => {
-				const target: Promise<void>[] = [];
-				projects.forEach(async project => {
-					const children = (
-						await list(ref(storage, `/${user?.uid}/${project}/`))
-					).items;
-
-					children.forEach(child => {
-						const docRef = ref(storage, child.fullPath);
-						target.push(deleteObject(docRef));
+				return Promise.all(
+					projects.map(project => {
+						project = encodeURIComponent(project);
+						return list(ref(storage, `/${user?.uid}/${project}/`));
+					})
+				).then(projectDirs => {
+					const target: Promise<void>[] = [];
+					projectDirs.forEach(dir => {
+						dir.items.forEach(file => {
+							const docRef = ref(storage, file.fullPath);
+							target.push(deleteObject(docRef));
+						});
 					});
+
+					return Promise.all(target);
 				});
-				return Promise.all(target);
 			},
 			{
 				onSuccess: () => queryClient.invalidateQueries(["projects"]),
@@ -125,6 +142,7 @@ const useStorage = () => {
 			}
 		);
 	};
+
 	// const saveProject;
 
 	return {
@@ -132,7 +150,6 @@ const useStorage = () => {
 		useProjectList,
 		useCreateProject,
 		useDeleteProject,
-		// deleteProject,
 		// saveProject
 		// deleteImages,
 		uploadImage

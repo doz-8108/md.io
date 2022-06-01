@@ -36,7 +36,7 @@ const List = ({
 	isLoading: boolean;
 }) => {
 	const { useDeleteProject } = useStorage();
-	const { mutateAsync } = useDeleteProject();
+	const { mutateAsync, isLoading: isDeleting } = useDeleteProject();
 	const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
 
 	const toggleProjectFromList = (projectName: string) => {
@@ -98,12 +98,16 @@ const List = ({
 							<Actions>
 								<IconButton
 									color="error"
-									disabled={!selectedProjects.length}
+									disabled={!selectedProjects.length || isDeleting}
 									title="delete project"
 									aria-label="button for deleting project"
 									onClick={deleteProject}
 								>
-									<RiDeleteBin2Line size={25} />
+									{isDeleting ? (
+										<CircularProgress size={25} />
+									) : (
+										<RiDeleteBin2Line size={25} />
+									)}
 								</IconButton>
 								<LoadingButton
 									loading={isLoading}
@@ -151,20 +155,16 @@ const Row = ({
 }) => {
 	const navigate = useNavigate();
 	const { name, lastModified } = projectInfo;
-	const dateInNum = Number(lastModified);
-
 	return (
 		<CustomizedRow
 			sx={{ cursor: "pointer" }}
 			onClick={e => {
 				if (e.currentTarget === (e.target as HTMLElement).parentElement)
-					navigate(`${dateInNum}#${name}`);
+					navigate(encodeURIComponent(name));
 			}}
 		>
 			<CustomizedCell component="th" scope="row">
-				<Checkbox
-					onChange={e => toggleProjectFromList(`${name}:${dateInNum}`)}
-				/>
+				<Checkbox onChange={e => toggleProjectFromList(`${name}`)} />
 				{name}
 			</CustomizedCell>
 			<CustomizedCell align="right">
