@@ -6,11 +6,10 @@ import React, {
 	useContext
 } from "react";
 import { User } from "firebase/auth";
-import { CircularProgress } from "@mui/material";
-import styled from "styled-components";
 import { useQueryClient } from "react-query";
 
 import * as auth from "../../utils/auth";
+import Spinner from "components/Spinner";
 
 const AuthContext = createContext<
 	| {
@@ -40,11 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	}, []);
 
 	if (isLoading) {
-		return (
-			<FullPageSpinner>
-				<CircularProgress />
-			</FullPageSpinner>
-		);
+		return <Spinner />;
 	}
 
 	return (
@@ -54,16 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	);
 };
 
-const FullPageSpinner = styled.div`
-	display: flex;
-	height: calc(100vh - 60px);
-	justify-content: center;
-	align-items: center;
-`;
-
 export const useAuth = () => {
 	const ctx = useContext(AuthContext);
-	if (!ctx) throw new Error("No context is available!");
-
+	if (!ctx) throw new Error("No auth context is available!");
 	return ctx;
 };

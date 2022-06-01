@@ -1,25 +1,31 @@
 import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import { Button, Menu, MenuItem } from "@mui/material";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 
 import { useAuth } from "../components/providers/auth";
 import { pushSuccessAlert } from "utils/alert";
 import ProjectList from "./projectList";
-import Editor from "./editor";
+import Tools from "../components/tools";
+import Project from "./project";
 
-import ProjectListBg from "../assets/project-list-bg.png";
 import GoogleLogo from "../assets/Google-logo.svg";
 
 const Entry = () => {
+	const { pathname } = useLocation();
+	const notProjectList = pathname.match(/\/projects\/(.+)/);
+
 	return (
 		<Container>
-			<Background />
 			<PageHeader>
 				<PageHeaderLeft>
-					<h2>
-						md.<span>io</span>
-					</h2>
+					{notProjectList ? (
+						<Tools />
+					) : (
+						<h2>
+							md.<span>io</span>
+						</h2>
+					)}
 				</PageHeaderLeft>
 				<PageHeaderRight>
 					<NameBox />
@@ -27,10 +33,9 @@ const Entry = () => {
 			</PageHeader>
 			<Routes>
 				<Route path="/projects" element={<ProjectList />} />
-				<Route path="/projects/:id" element={<Editor />} />
-				<Route path="*" element={<Navigate to="/projects" />} />
+				<Route path="/projects/:id" element={<Project />} />
+				<Route path="*" element={<Navigate to="/projects" replace />} />
 			</Routes>
-			<PageFooter>Made with ❤️ by Ben L.</PageFooter>
 		</Container>
 	);
 };
@@ -51,14 +56,20 @@ const NameBox = () => {
 
 	return user ? (
 		<>
-			<InviteButton
+			<Button
+				sx={{
+					textTransform: "none",
+					fontSize: "1.7rem",
+					padding: "0 1rem",
+					marginRight: "2rem"
+				}}
 				variant="outlined"
 				color="secondary"
 				title="Invite others to edit online!"
 				onClick={handleInvite}
 			>
 				Invite
-			</InviteButton>
+			</Button>
 			<PopoverEntry onClick={() => setPopoverOpen(true)} ref={nameBox}>
 				Hi, {user?.displayName}
 			</PopoverEntry>
@@ -89,33 +100,6 @@ const NameBox = () => {
 	);
 };
 
-const InviteButton = styled(Button)`
-	text-transform: none !important;
-	font-size: 1.7rem !important;
-	padding: 0 1rem !important;
-	margin-right: 2rem !important;
-`;
-
-const Background = styled.div`
-	border-radius: 15px;
-	height: 768px;
-	width: 1368px;
-	background-image: url(${ProjectListBg});
-	background-repeat: no-repeat;
-	background-position: center;
-	position: absolute;
-	top: 7rem;
-	left: 50%;
-	transform: translateX(-50%);
-	z-index: -1;
-
-	@media only screen and (max-width: 1368px) {
-		top: 5rem;
-		width: 100%;
-		border-radius: 0;
-	}
-`;
-
 const Container = styled.div`
 	width: 100vw;
 	height: 100vh;
@@ -127,15 +111,6 @@ const PopoverEntry = styled.button`
 	border: none;
 	font-size: 2rem;
 	cursor: pointer;
-`;
-
-const PageFooter = styled.footer`
-	text-align: center;
-	padding-bottom: 5;
-	position: absolute;
-	left: 50%;
-	bottom: 4rem;
-	transform: translateX(-50%);
 `;
 
 const PageHeaderRight = styled.div`
@@ -162,6 +137,8 @@ const PageHeader = styled.header`
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 	padding: 0 1.5vw;
 	background-color: #fff;
+	position: relative;
+	z-index: 100;
 `;
 
 export default Entry;

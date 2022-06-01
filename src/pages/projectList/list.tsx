@@ -16,6 +16,7 @@ import { LoadingButton } from "@mui/lab";
 import styled from "styled-components";
 import { AiOutlinePlus } from "react-icons/ai";
 import { RiDeleteBin2Line } from "react-icons/ri";
+import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 
 import useStorage from "../../hooks/useStorage";
@@ -148,14 +149,21 @@ const Row = ({
 	projectInfo: Project;
 	toggleProjectFromList: (param: string) => void;
 }) => {
+	const navigate = useNavigate();
 	const { name, lastModified } = projectInfo;
 	const dateInNum = Number(lastModified);
 
 	return (
-		<CustomizedRow sx={{ cursor: "pointer" }}>
+		<CustomizedRow
+			sx={{ cursor: "pointer" }}
+			onClick={e => {
+				if (e.currentTarget === (e.target as HTMLElement).parentElement)
+					navigate(`${dateInNum}#${name}`);
+			}}
+		>
 			<CustomizedCell component="th" scope="row">
 				<Checkbox
-					onChange={() => toggleProjectFromList(`${name}:${dateInNum}`)}
+					onChange={e => toggleProjectFromList(`${name}:${dateInNum}`)}
 				/>
 				{name}
 			</CustomizedCell>

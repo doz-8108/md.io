@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import {
 	getStorage,
 	ref,
@@ -5,11 +6,14 @@ import {
 	list,
 	ListResult,
 	StorageError,
-	deleteObject
+	deleteObject,
+	getBlob
 } from "firebase/storage";
-import { useAuth } from "components/providers/auth";
 import { useMutation, useQueryClient, useQuery } from "react-query";
+
+import { useAuth } from "../components/providers/auth";
 import { pushErrorAlert } from "utils/alert";
+import useProjectName from "./useProjectName";
 
 // default markdown file for new project
 const emptyMarkdownB64 =
@@ -20,9 +24,34 @@ const useStorage = () => {
 	const storage = getStorage();
 	const queryClient = useQueryClient();
 	const listRef = ref(storage, `/${user?.uid}`);
+	const projectName = useProjectName();
 
-	// const uploadImages = () => {};
+	const uploadImage = useCallback(
+		(dataURL: string, ext: string) => {
+			const imageRef = ref(
+				storage,
+				`/${user?.uid}/${projectName}/${Date.now()}.${ext}`
+			);
+			console.log(`/${user?.uid}/${projectName}/${Date.now()}.${ext}`);
+
+			return uploadString(imageRef, dataURL, "data_url", {
+				customMetadata: {
+					type: "upload"
+				}
+			});
+		},
+		[projectName, storage, user?.uid]
+	);
+
 	// const deleteImages;
+
+	const getProject = useCallback(async () => {
+		if (user) {
+			const docRef = ref(storage, `${user?.uid}/${projectName}/index.md`);
+			return getBlob(docRef);
+		}
+	}, [user, storage, projectName]);
+
 	const useProjectList = () => {
 		return useQuery(["projects"], () => list(listRef), {
 			enabled: !!user,
@@ -99,13 +128,14 @@ const useStorage = () => {
 	// const saveProject;
 
 	return {
+		getProject,
 		useProjectList,
 		useCreateProject,
-		useDeleteProject
+		useDeleteProject,
 		// deleteProject,
 		// saveProject
 		// deleteImages,
-		// uploadImages,
+		uploadImage
 	};
 };
 

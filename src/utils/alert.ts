@@ -9,3 +9,16 @@ export const pushEmojiAlert = ({
 	icon: string;
 	message: string;
 }) => toast(message, { icon });
+export const pushPromiseAlert = <T>(
+	mutate: Promise<T>,
+	{
+		loading,
+		success,
+		error
+	}: { loading: string; success: string; error: string }
+) =>
+	toast.promise(mutate, {
+		loading,
+		success,
+		error
+	});
