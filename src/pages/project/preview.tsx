@@ -4,9 +4,17 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 
-const Preview = ({ input }: { input: string }) => {
+const Preview = ({
+	input,
+	view,
+	matches
+}: {
+	input: string;
+	view: boolean;
+	matches: boolean;
+}) => {
 	return (
-		<Container>
+		<Container style={{ display: matches && !view ? "none" : "block" }}>
 			<ReactMarkdown remarkPlugins={[remarkParse, remarkGfm]}>
 				{input}
 			</ReactMarkdown>
@@ -15,14 +23,18 @@ const Preview = ({ input }: { input: string }) => {
 };
 
 const Container = styled.div`
+	background-color: #fff;
 	font-size: 1.6rem;
 	line-height: 1.8;
 	word-wrap: break-word;
-	pointer-events: none;
-
+	position: relative;
 	width: 50%;
 	padding: 4ch;
 	overflow-y: scroll;
+
+	@media only screen and (max-width: 640px) {
+		width: 100%;
+	}
 
 	li {
 		margin-left: 2ch;
@@ -85,6 +97,7 @@ const Container = styled.div`
 	img {
 		width: 80%;
 		resize: both;
+		pointer-events: none;
 	}
 
 	.task-list-item {

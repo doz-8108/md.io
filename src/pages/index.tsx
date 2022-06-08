@@ -1,25 +1,29 @@
-import React, { useRef, useState } from "react";
+import React from "react";
 import styled from "styled-components";
-import { Button, Menu, MenuItem } from "@mui/material";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 
-import { useAuth } from "../components/providers/auth";
-import { pushSuccessAlert } from "utils/alert";
-import ProjectList from "./projectList";
 import Tools from "../components/tools";
+import ProjectList from "./projectList";
 import Project from "./project";
+import UtilBox from "components/util-box";
+import Spinner from "components/spinner";
+import { useAuth } from "../components/providers/auth";
 
-import GoogleLogo from "../assets/Google-logo.svg";
+import BgLeft from "../assets/list-bg-l.png";
+import BgRight from "../assets/list-bg-r.png";
 
 const Entry = () => {
 	const { pathname } = useLocation();
-	const notProjectList = pathname.match(/\/projects\/(.+)/);
+	const { user } = useAuth();
+
+	const routeElement = user ? <Project /> : <Navigate to="/projects" replace />;
+	const enterProject = pathname !== "/projects";
 
 	return (
 		<Container>
 			<PageHeader>
 				<PageHeaderLeft>
-					{notProjectList ? (
+					{enterProject ? (
 						<Tools />
 					) : (
 						<h2>
@@ -28,75 +32,20 @@ const Entry = () => {
 					)}
 				</PageHeaderLeft>
 				<PageHeaderRight>
-					<NameBox />
+					<UtilBox render={enterProject} />
 				</PageHeaderRight>
 			</PageHeader>
-			<Routes>
-				<Route path="/projects" element={<ProjectList />} />
-				<Route path="/projects/:id" element={<Project />} />
-				<Route path="*" element={<Navigate to="/projects" replace />} />
-			</Routes>
+			{/* Firebase auth can be null first time even if the user have signed in  */}
+			{user === undefined ? (
+				<Spinner />
+			) : (
+				<Routes>
+					<Route path="/projects" element={<ProjectList />} />
+					<Route path="/projects/:id" element={routeElement} />
+					<Route path="*" element={<Navigate to="/projects" replace />} />
+				</Routes>
+			)}
 		</Container>
-	);
-};
-
-const NameBox = () => {
-	const { user, login, logout } = useAuth();
-	const [popoverOpen, setPopoverOpen] = useState(false);
-	const nameBox = useRef(null);
-
-	const handleLogout = () => {
-		logout();
-		setPopoverOpen(false);
-	};
-
-	const handleInvite = () => {
-		pushSuccessAlert("Copied invitation link to your clipboard!");
-	};
-
-	return user ? (
-		<>
-			<Button
-				sx={{
-					textTransform: "none",
-					fontSize: "1.7rem",
-					padding: "0 1rem",
-					marginRight: "2rem"
-				}}
-				variant="outlined"
-				color="secondary"
-				title="Invite others to edit online!"
-				onClick={handleInvite}
-			>
-				Invite
-			</Button>
-			<PopoverEntry onClick={() => setPopoverOpen(true)} ref={nameBox}>
-				Hi, {user?.displayName}
-			</PopoverEntry>
-			<Menu
-				open={popoverOpen}
-				onClose={() => setPopoverOpen(false)}
-				anchorEl={nameBox.current}
-			>
-				<MenuItem onClick={handleLogout} style={{ fontSize: "1.4rem" }}>
-					Logout
-				</MenuItem>
-			</Menu>
-		</>
-	) : (
-		<Button
-			color="primary"
-			variant="outlined"
-			style={{ padding: ".4rem .7rem" }}
-			onClick={login}
-		>
-			<img
-				src={GoogleLogo}
-				alt="login with your Google account"
-				style={{ width: "3rem", marginRight: "1rem" }}
-			/>
-			<span>Login with Google</span>
-		</Button>
 	);
 };
 
@@ -104,13 +53,15 @@ const Container = styled.div`
 	width: 100vw;
 	height: 100vh;
 	position: relative;
-`;
 
-const PopoverEntry = styled.button`
-	background: none;
-	border: none;
-	font-size: 2rem;
-	cursor: pointer;
+	background-image: url(${BgRight}), url(${BgLeft});
+	background-repeat: no-repeat;
+	background-position: right top, left bottom;
+
+	@media only screen and (max-width: 640px) {
+		background-image: url(${BgRight});
+		background-position: right top;
+	}
 `;
 
 const PageHeaderRight = styled.div`

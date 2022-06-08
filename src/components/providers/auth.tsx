@@ -9,11 +9,11 @@ import { User } from "firebase/auth";
 import { useQueryClient } from "react-query";
 
 import * as auth from "../../utils/auth";
-import Spinner from "components/Spinner";
+import Spinner from "components/spinner";
 
 const AuthContext = createContext<
 	| {
-			user: User | null;
+			user: User | null | undefined;
 			login: () => Promise<void>;
 			logout: () => Promise<void>;
 	  }
@@ -21,7 +21,7 @@ const AuthContext = createContext<
 >(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-	const [user, setUser] = useState<User | null>(null);
+	const [user, setUser] = useState<User | null | undefined>(undefined);
 	const [isLoading, setLoading] = useState(false);
 	const queryClient = useQueryClient();
 
@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		auth.logout().then(() => {
 			queryClient.clear();
 			window.location.reload();
+			localStorage.clear();
 		});
 
 	useEffect(() => {

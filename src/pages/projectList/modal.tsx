@@ -9,7 +9,7 @@ import {
 import styled from "styled-components";
 import { LoadingButton } from "@mui/lab";
 
-import useStorage from "../../hooks/useStorage";
+import useProject from "hooks/useProject";
 
 const Modal = ({
 	closeModal,
@@ -20,19 +20,25 @@ const Modal = ({
 }) => {
 	const [isInputEmpty, setInputEmpty] = useState(false);
 	const [projectName, setProjectName] = useState("");
-	const { useCreateProject } = useStorage();
+
+	const { useCreateProject } = useProject();
 	const { mutateAsync: createProject, isLoading } = useCreateProject();
-	const shouldDialogClose = () => !isLoading && closeModal();
+	const shouldDialogClose = () => {
+		if (!isLoading) {
+			setInputEmpty(false);
+			setProjectName("");
+			closeModal();
+		}
+	};
 
 	const handleFormSubmit = async (e: React.FormEvent<HTMLButtonElement>) => {
 		e.preventDefault();
 		if (projectName) {
 			await createProject(projectName);
-			setProjectName("");
 			closeModal();
-		} else {
-			setInputEmpty(true);
-		}
+		} else setInputEmpty(true);
+
+		setProjectName("");
 	};
 
 	return (

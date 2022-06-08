@@ -7,6 +7,7 @@ import {
 	onAuthStateChanged,
 	User
 } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
 	apiKey: process.env.REACT_APP_FIREBASE_APIKEY,
@@ -16,10 +17,11 @@ const firebaseConfig = {
 	messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGINGSENDERID,
 	appId: process.env.REACT_APP_FIREBASE_APPID
 };
-initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
+export const db = getFirestore(app);
 export const login = () => signInWithPopup(auth, provider).catch(err => {});
 export const logout = () => signOut(auth);
 export const retrieveCurrentUser = (
@@ -31,3 +33,4 @@ export const retrieveCurrentUser = (
 		setLoading(false);
 	});
 };
+export const currentUser = () => auth.currentUser;

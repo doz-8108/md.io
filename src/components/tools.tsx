@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode, useRef, useState } from "react";
 import styled from "styled-components";
 import {
 	GoBold,
@@ -14,12 +14,45 @@ import {
 	MdCode
 } from "react-icons/md";
 import { FaItalic, FaTable } from "react-icons/fa";
-import { AiOutlineEnter } from "react-icons/ai";
+import { FcPrevious } from "react-icons/fc";
+import { AiOutlineEnter, AiFillAppstore } from "react-icons/ai";
+import { useMediaQuery, Popover } from "@mui/material";
+
+import { useNavigate } from "react-router";
 import { useCMContext } from "./providers/code-mirror";
 
+const Wrapper = ({
+	children,
+	matches,
+	open,
+	onClose,
+	anchorEl
+}: {
+	children: ReactNode;
+	matches: boolean;
+	open: boolean;
+	onClose: (param: boolean) => void;
+	anchorEl: HTMLButtonElement | null;
+}) => {
+	return matches ? (
+		<Popover open={open} anchorEl={anchorEl} onClose={onClose}>
+			<MenuGrid>{children}</MenuGrid>
+		</Popover>
+	) : (
+		<>{children}</>
+	);
+};
+
 const Tools = () => {
-	const { formatText, toList, addLineBreak, insertTable, insertURL } =
-		useCMContext();
+	const navigate = useNavigate();
+	const {
+		formatText,
+		toList,
+		addLineBreak,
+		insertTable,
+		insertURL,
+		codeMirror
+	} = useCMContext();
 	const toolsCongfigs = [
 		{
 			title: "bold text",
@@ -82,23 +115,84 @@ const Tools = () => {
 			clickEvent: addLineBreak
 		}
 	];
+	const matches = useMediaQuery("(max-width: 640px)");
+	const [popoverOpen, setPopover] = useState(false);
+	const menuButton = useRef(null);
 
 	return (
-		<>
-			<List>
-				{toolsCongfigs.map(({ title, icon, clickEvent }, index) => {
-					return (
-						<ListItem key={index}>
-							<button title={title} onClick={clickEvent}>
-								{icon}
-							</button>
-						</ListItem>
-					);
-				})}
-			</List>
-		</>
+		<List>
+			{codeMirror && (
+				<>
+					<ListItem>
+						<button
+							title="back to project list"
+							onClick={() => navigate("/projects", { replace: true })}
+						>
+							<FcPrevious size={25} />
+						</button>
+					</ListItem>
+					{/* {matches ? ( */}
+					{matches && (
+						<MenuButton ref={menuButton} onClick={() => setPopover(true)}>
+							<AiFillAppstore size={25} />
+							<span>tools</span>
+						</MenuButton>
+					)}
+					<Wrapper
+						anchorEl={menuButton.current}
+						matches={matches}
+						open={popoverOpen}
+						onClose={() => setPopover(false)}
+					>
+						{toolsCongfigs.map(({ title, icon, clickEvent }, index) => {
+							return (
+								<ListItem key={index}>
+									<button
+										title={title}
+										onClick={clickEvent}
+										style={{
+											background: "none",
+											border: "none",
+											display: "flex",
+											justifyContent: "center",
+											alignItems: "center",
+											cursor: "pointer",
+											padding: "5px"
+										}}
+									>
+										{icon}
+									</button>
+								</ListItem>
+							);
+						})}
+					</Wrapper>
+				</>
+			)}
+		</List>
 	);
 };
+
+const MenuButton = styled.button`
+	display: flex;
+	align-items: center;
+	border-radius: 10px;
+	color: #2d3f4e;
+	border: 1px solid currentColor !important;
+	padding: 0.2rem 1rem;
+
+	span {
+		font-size: 1.6rem;
+		margin-left: 0.8rem;
+	}
+`;
+
+const MenuGrid = styled.div`
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	grid-template-rows: 1fr 1fr 1fr;
+	grid-gap: 5px;
+	padding: 10px;
+`;
 
 const ListItem = styled.li`
 	margin-right: 1rem;
@@ -107,16 +201,6 @@ const ListItem = styled.li`
 	display: flex;
 	align-items: center;
 	justify-content: center;
-
-	button {
-		background: none;
-		border: none;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		cursor: pointer;
-		padding: 5px;
-	}
 
 	&:hover {
 		box-shadow: 0 5px 5px rgba(0, 0, 0, 0.2);
@@ -131,6 +215,15 @@ const List = styled.ul`
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+
+	button {
+		background: none;
+		border: none;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		cursor: pointer;
+	}
 `;
 
 export default Tools;

@@ -19,12 +19,8 @@ import { RiDeleteBin2Line } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 
-import useStorage from "../../hooks/useStorage";
-
-interface Project {
-	name: string;
-	lastModified: Date;
-}
+import useProject from "hooks/useProject";
+import { Project } from "types/project";
 
 const List = ({
 	projects,
@@ -35,17 +31,17 @@ const List = ({
 	openModal: () => void;
 	isLoading: boolean;
 }) => {
-	const { useDeleteProject } = useStorage();
-	const { mutateAsync, isLoading: isDeleting } = useDeleteProject();
+	const { useDeleteProjects } = useProject();
+	const { mutateAsync, isLoading: isDeleting } = useDeleteProjects();
 	const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
 
-	const toggleProjectFromList = (projectName: string) => {
+	const toggleProjectFromList = (id: string) => {
 		const tmp = [...selectedProjects];
 		const projectIndex = selectedProjects.findIndex(
-			selectedProject => selectedProject === projectName
+			selectedProject => selectedProject === id
 		);
 		setSelectedProjects(() => {
-			projectIndex !== -1 ? tmp.splice(projectIndex, 1) : tmp.push(projectName);
+			projectIndex !== -1 ? tmp.splice(projectIndex, 1) : tmp.push(id);
 			return tmp;
 		});
 	};
@@ -69,7 +65,12 @@ const List = ({
 						{["Project name", "Last modified"].map((field, index) => (
 							<TableCell
 								key={index}
-								sx={{ fontSize: "1.5rem", fontWeight: 700 }}
+								sx={{
+									fontSize: "1.5rem",
+									fontWeight: 700,
+									backgroundColor: "var(--color-blue)",
+									color: "#fff"
+								}}
 								align={index !== 0 ? "right" : "left"}
 							>
 								{field}
@@ -154,18 +155,18 @@ const Row = ({
 	toggleProjectFromList: (param: string) => void;
 }) => {
 	const navigate = useNavigate();
-	const { name, lastModified } = projectInfo;
+	const { projectName, lastModified, id } = projectInfo;
 	return (
 		<CustomizedRow
 			sx={{ cursor: "pointer" }}
 			onClick={e => {
 				if (e.currentTarget === (e.target as HTMLElement).parentElement)
-					navigate(encodeURIComponent(name));
+					navigate(id, { replace: true });
 			}}
 		>
 			<CustomizedCell component="th" scope="row">
-				<Checkbox onChange={e => toggleProjectFromList(`${name}`)} />
-				{name}
+				<Checkbox onChange={e => toggleProjectFromList(`${id}`)} />
+				{decodeURIComponent(projectName)}
 			</CustomizedCell>
 			<CustomizedCell align="right">
 				{dayjs(lastModified).format("YYYY-MM-DD")}

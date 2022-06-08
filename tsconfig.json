@@ -20,6 +20,8 @@
 	"include": [
 		"./src/**/*",
 		"./node_modules/react-scripts/lib/react-app.d.ts",
-		"./node_modules/@types"
+		"./node_modules/@types",
+		"./node_modules/@types/uuid",
+		"./node_modules/@types/randomcolor"
 	]
 }

@@ -8,19 +8,36 @@ import React, {
 	useCallback
 } from "react";
 import { getDownloadURL } from "firebase/storage";
+import { io } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 
 import useStorage from "hooks/useStorage";
-import { pushErrorAlert, pushPromiseAlert } from "utils/alert";
+import { pushEmojiAlert, pushErrorAlert, pushPromiseAlert } from "utils/alert";
+import { Cursor } from "types/cusor";
+import useProject from "hooks/useProject";
+import { useAuth } from "./auth";
+import { Participant } from "types/participant";
 
 const { fromTextArea } = require("codemirror");
 
 interface PresetType {
 	initialVal: string;
-	handleChange: (param: string) => void;
+	handleChange: (input: string, pos: Cursor) => void;
 }
 
 type FormatStr = "BOLD" | "ITALIC" | "LINE_THROUGH";
 type ToList = "UNORDERED" | "ORDERED" | "CODE" | "CHECK" | "QUOTE";
+type Participants = Participant[];
+
+const SOCKET = process.env.REACT_APP_SOCKET || "ws://localhost:3001";
+
+const ACTIONS = {
+	JOIN: "JOIN",
+	SYNC: "SYNC",
+	LEAVE: "LEAVE",
+	FULL: "FULL",
+	QUERY: "QUERY"
+};
 
 const formatStr: { [key in FormatStr as string]: string } = {
 	ITALIC: "*",
@@ -47,15 +64,36 @@ const listRegex: { [key in ToList as string]: RegExp } = {
 const CodeMirrorContext = createContext<any>(undefined);
 
 export const CodeMirrorProvider = ({ children }: { children: ReactNode }) => {
+	const id = window.location.href.match(/\/projects\/(.+)/)?.[1];
+	const { user } = useAuth();
+	const { setMembers } = useProject();
 	const { uploadImage } = useStorage();
+	const navigate = useNavigate();
+
+	const socket = useRef<any>(null);
 	const editorRoot = useRef<HTMLTextAreaElement>(null);
 	const [preset, setPreset] = useState<PresetType | null>(null);
 	const [codeMirror, setCodeMirror] =
 		useState<ReturnType<typeof fromTextArea>>(null);
 
-	const setValue = (val: string) => {
-		codeMirror.setValue(val);
-	};
+	const setValue = useCallback(
+		(val: string) => {
+			try {
+				if (codeMirror) codeMirror.setValue(val);
+			} catch (error) {}
+		},
+		[codeMirror]
+	);
+
+	const setCursor = useCallback(
+		(pos: Cursor) => {
+			if (codeMirror) {
+				codeMirror.setCursor(pos);
+				codeMirror.focus();
+			}
+		},
+		[codeMirror]
+	);
 
 	const getPrefixByLine = (
 		line = "",
@@ -89,6 +127,44 @@ export const CodeMirrorProvider = ({ children }: { children: ReactNode }) => {
 		return cb(result, orderedListItem);
 	};
 
+	useEffect(() => {
+		if (!socket.current) {
+			socket.current = io(SOCKET, {
+				transports: ["websocket"],
+				reconnectionDelay: 2000,
+				reconnectionAttempts: 10,
+				timeout: 600000 // this socket will be disconnected if idle for 10mins
+			});
+		} else socket.current.connect();
+
+		socket.current.on("connect_error", () => {
+			if (window.location.pathname !== "/projects") {
+				navigate({ pathname: "/projects", search: "?error=connection_failed" });
+			}
+		});
+
+		socket.current.on(ACTIONS.FULL, () => {
+			if (window.location.pathname !== "/projects") {
+				navigate({
+					pathname: "/projects",
+					search: "?error=room_full"
+				});
+			}
+		});
+
+		socket.current.on(
+			ACTIONS.JOIN,
+			({ m, n }: { m: Participants; n: Partial<Participant> }) => {
+				setMembers(m);
+				if (n.uid !== user?.uid)
+					pushEmojiAlert({
+						icon: "👋",
+						message: `${n.name} joined the project`
+					});
+			}
+		);
+	}, [setMembers, user?.uid]);
+
 	const isSelectBottomToTop = (anchor: any, head: any) => {
 		if (
 			anchor.line > head.line ||
@@ -115,16 +191,26 @@ export const CodeMirrorProvider = ({ children }: { children: ReactNode }) => {
 				}
 			});
 
-			cm.on("change", (cmObj: any) => {
-				const input = cmObj.doc.getValue();
-				preset.handleChange(input);
+			cm.on("change", (cmObj: any, changes: any) => {
+				if (changes.origin !== "setValue") {
+					const input = cmObj.doc.getValue();
+					const { line, ch } = cmObj.doc.getCursor();
+
+					socket.current.emit(ACTIONS.SYNC, {
+						projectId: id,
+						uid: user?.uid,
+						pos: { line, ch },
+						doc: input
+					});
+
+					preset.handleChange(input, { line, ch });
+				}
 			});
 
 			cm.setValue(preset?.initialVal);
-
 			setCodeMirror(cm);
 		}
-	}, [preset]);
+	}, [id, preset, user?.uid]);
 
 	const insertURL = useCallback(
 		(type: "URL" | "IMG", url = "") => {
@@ -162,23 +248,19 @@ export const CodeMirrorProvider = ({ children }: { children: ReactNode }) => {
 				const editorClasses = editor.classList;
 				const container = document.querySelector(".editor") as HTMLDivElement;
 
-				let dragOver = window.addEventListener(
-					"dragover",
-					e => {
-						e.preventDefault();
-						const target = e.target as HTMLElement;
-						if (container.contains(target)) editorClasses.add("drop-hover");
-						else editorClasses.remove("drop-hover");
-					},
-					true
-				) as any;
+				const dragOver = (e: DragEvent) => {
+					e.preventDefault();
+					const target = e.target as HTMLElement;
+					if (container.contains(target)) editorClasses.add("drop-hover");
+					else editorClasses.remove("drop-hover");
+				};
 
-				let dragLeave = window.addEventListener("dragleave", e => {
+				const dragLeave = (e: DragEvent) => {
 					if (container === (e.target as HTMLDivElement))
 						editorClasses.remove("drop-hover");
-				}) as any;
+				};
 
-				let dragDrop = window.addEventListener("drop", async e => {
+				const drop = async (e: DragEvent) => {
 					e.preventDefault();
 					editorClasses.remove("drop-hover");
 					const image = e.dataTransfer?.files[0];
@@ -205,12 +287,16 @@ export const CodeMirrorProvider = ({ children }: { children: ReactNode }) => {
 					if (image && image.type.startsWith("image/")) {
 						reader.readAsDataURL(image);
 					} else pushErrorAlert("Un-supported file format!");
-				}) as any;
+				};
+
+				window.addEventListener("dragover", dragOver, true);
+				window.addEventListener("dragleave", dragLeave);
+				window.addEventListener("drop", drop);
 
 				return () => {
-					window.removeEventListener("dragover", dragOver);
+					window.removeEventListener("dragover", dragOver, true);
 					window.removeEventListener("dragleave", dragLeave);
-					window.removeEventListener("drop", dragDrop);
+					window.removeEventListener("drop", drop);
 				};
 			}
 		}
@@ -265,7 +351,7 @@ export const CodeMirrorProvider = ({ children }: { children: ReactNode }) => {
 					rightMatch = false;
 
 				if (match === "*") {
-					leftMatch = strInLeft.match(/(?<!\*)\*{1}$/) !== null;
+					leftMatch = strInLeft.match(/^[^*]?\*{1}$/) !== null;
 					rightMatch = strInRight.match(/^\*{1}(?!\*)/) !== null;
 				} else {
 					leftMatch = strInLeft === match;
@@ -320,7 +406,7 @@ export const CodeMirrorProvider = ({ children }: { children: ReactNode }) => {
 					codeMirror.setCursor({ line, ch: ch - offset });
 				} else {
 					// i.e cursor in "ab|cd"=> "ab**|**cd"
-					codeMirror.replaceSelection(match + match);
+					codeMirror.replaceRange(match + match, { line, ch: ch });
 					codeMirror.setCursor({ line, ch: ch + offset });
 				}
 			}
@@ -453,7 +539,10 @@ export const CodeMirrorProvider = ({ children }: { children: ReactNode }) => {
 				insertTable,
 				insertURL,
 				addLineBreak,
-				setValue
+				setValue,
+				setCursor,
+				socket,
+				ACTIONS
 			}}
 		>
 			{children}
