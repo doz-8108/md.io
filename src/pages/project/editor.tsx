@@ -63,7 +63,7 @@ const Editor = ({
 				return (
 					<UserCursor
 						key={index}
-						username={"tester"}
+						username={m.name || ""}
 						color={colorArray[index]}
 						style={{
 							top: `${(m.pos?.line || 0) * 20 + 4}px`,
