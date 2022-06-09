@@ -1,8 +1,8 @@
-# md.io
+<img width="195" alt="mdio-logo" src="https://user-images.githubusercontent.com/40817247/172797406-e4a94e01-563b-444b-a2c8-10ba46f90473.png">
+
 > The tool aims at being a helpful assistant for those developers 
 > who want to discuss and share their thoughts.
 
-was built using...
 &nbsp;  
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 ![Styled Components](https://img.shields.io/badge/styled--components-DB7093?style=for-the-badge&logo=styled-components&logoColor=white)
