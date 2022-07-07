@@ -2,12 +2,12 @@ import React from "react";
 import styled from "styled-components";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 
-import Tools from "../components/tools";
+import Tools from "../components/Tools";
 import ProjectList from "./projectList";
 import Project from "./project";
-import UtilBox from "components/util-box";
-import Spinner from "components/spinner";
-import { useAuth } from "../components/providers/auth";
+import UtilBox from "components/UtilsBox";
+import Spinner from "components/Spinner";
+import { useAuth } from "../components/providers/Auth";
 
 import BgLeft from "../assets/list-bg-l.png";
 import BgRight from "../assets/list-bg-r.png";

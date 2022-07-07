@@ -9,15 +9,15 @@ import {
 } from "react-icons/ai";
 import styled from "styled-components";
 
-import Spinner from "components/spinner";
+import Spinner from "components/Spinner";
 import useProject from "hooks/useProject";
 import useDebounce from "hooks/useDebounce";
-import Editor from "./editor";
-import Preview from "./preview";
-import { Cursor } from "types/cusor";
+import Editor from "./Editor";
+import Preview from "./Preview";
+import { Cursor } from "types/cursor";
 import { Participant } from "types/participant";
-import { useAuth } from "components/providers/auth";
-import { useCMContext } from "../../components/providers/code-mirror";
+import { useAuth } from "components/providers/Auth";
+import { useCMContext } from "../../components/providers/CodeMirror";
 
 const ProjectPage = () => {
 	document.title = "md.io editor";

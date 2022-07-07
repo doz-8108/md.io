@@ -3,8 +3,8 @@ import { Button, IconButton, Menu, MenuItem } from "@mui/material";
 import { MdGroupAdd } from "react-icons/md";
 import styled from "styled-components";
 
-import { useAuth } from "./providers/auth";
-import InviteModal from "./invite-modal";
+import { useAuth } from "./providers/Auth";
+import InviteModal from "./InviteModal";
 
 import GoogleLogo from "../assets/Google-logo.svg";
 
@@ -40,7 +40,11 @@ const UtilBox = ({ render }: { render: boolean }) => {
 				</>
 			)}
 			<PopoverEntry onClick={() => setPopoverOpen(true)} ref={nameBox}>
-				<img src={user.photoURL || undefined} alt="user avatar" />
+				<img
+					src={user.photoURL || undefined}
+					alt="user avatar"
+					referrerPolicy="no-referrer"
+				/>
 			</PopoverEntry>
 			<Menu
 				open={popoverOpen}

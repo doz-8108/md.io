@@ -13,9 +13,9 @@ import { useNavigate } from "react-router-dom";
 
 import useStorage from "hooks/useStorage";
 import { pushEmojiAlert, pushErrorAlert, pushPromiseAlert } from "utils/alert";
-import { Cursor } from "types/cusor";
+import { Cursor } from "types/cursor";
 import useProject from "hooks/useProject";
-import { useAuth } from "./auth";
+import { useAuth } from "./Auth";
 import { Participant } from "types/participant";
 
 const { fromTextArea } = require("codemirror");

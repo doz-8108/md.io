@@ -7,7 +7,7 @@ import {
 	list
 } from "firebase/storage";
 
-import { useAuth } from "../components/providers/auth";
+import { useAuth } from "../components/providers/Auth";
 
 const useStorage = () => {
 	const { user } = useAuth();

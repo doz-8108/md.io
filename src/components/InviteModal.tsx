@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 import { pushSuccessAlert } from "utils/alert";
 import { Participant } from "types/participant";
-import { useCMContext } from "./providers/code-mirror";
+import { useCMContext } from "./providers/CodeMirror";
 
 const InviteModal = ({
 	open,

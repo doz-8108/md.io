@@ -9,7 +9,7 @@ import { User } from "firebase/auth";
 import { useQueryClient } from "react-query";
 
 import * as auth from "../../utils/auth";
-import Spinner from "components/spinner";
+import Spinner from "components/Spinner";
 
 const AuthContext = createContext<
 	| {

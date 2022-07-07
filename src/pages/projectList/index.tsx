@@ -3,10 +3,10 @@ import styled from "styled-components";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@mui/material";
 
-import List from "./list";
-import Modal from "./modal";
+import List from "./List";
+import Modal from "./Modal";
 import useProject from "hooks/useProject";
-import { useAuth } from "../../components/providers/auth";
+import { useAuth } from "../../components/providers/Auth";
 import { pushEmojiAlert, pushErrorAlert } from "utils/alert";
 
 const ProjectListpage = () => {

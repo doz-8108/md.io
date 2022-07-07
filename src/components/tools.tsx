@@ -19,7 +19,7 @@ import { AiOutlineEnter, AiFillAppstore } from "react-icons/ai";
 import { useMediaQuery, Popover } from "@mui/material";
 
 import { useNavigate } from "react-router";
-import { useCMContext } from "./providers/code-mirror";
+import { useCMContext } from "./providers/CodeMirror";
 
 const Wrapper = ({
 	children,

@@ -1,4 +1,4 @@
-import { Cursor } from "./cusor";
+import { Cursor } from "./cursor";
 
 export interface Participant {
 	name: string;

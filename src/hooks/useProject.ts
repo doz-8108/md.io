@@ -16,7 +16,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router";
 
 import { db } from "utils/auth";
-import { useAuth } from "components/providers/auth";
+import { useAuth } from "components/providers/Auth";
 import { pushErrorAlert } from "utils/alert";
 import { Project } from "types/project";
 import useStorage from "./useStorage";

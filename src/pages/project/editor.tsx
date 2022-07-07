@@ -6,10 +6,10 @@ import "codemirror/lib/codemirror.css";
 import "codemirror/mode/markdown/markdown";
 import "./index.css";
 
-import { useCMContext } from "components/providers/code-mirror";
-import { Cursor } from "../../types/cusor";
+import { useCMContext } from "components/providers/CodeMirror";
+import { Cursor } from "../../types/cursor";
 import { Participant } from "../../types/participant";
-import { useAuth } from "components/providers/auth";
+import { useAuth } from "components/providers/Auth";
 
 const randomColor = require("randomcolor");
 

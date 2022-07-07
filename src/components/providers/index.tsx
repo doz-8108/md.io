@@ -2,9 +2,9 @@ import React, { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
 import { QueryClientProvider, QueryClient } from "react-query";
 
-import StyleProvider from "./style";
-import { CodeMirrorProvider } from "./code-mirror";
-import { AuthProvider } from "./auth";
+import StyleProvider from "./Theme";
+import { CodeMirrorProvider } from "./CodeMirror";
+import { AuthProvider } from "./Auth";
 
 const AppProvider = ({ children }: { children: ReactNode }) => {
 	const queryClient = new QueryClient();
