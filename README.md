@@ -38,3 +38,7 @@
 👋 **Drag and drop upload image**
 &nbsp;  
 ![image](https://user-images.githubusercontent.com/40817247/172757287-0a7caa2c-5925-49c9-a920-84779c956b73.png)
+
+## Views / Future works
+- CodeMirror is a old tool and the documentation is not detailed enough
+- The websocket sometimes just died, need to figure out why...
