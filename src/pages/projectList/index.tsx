@@ -63,7 +63,7 @@ const ProjectListpage = () => {
 					<Modal open={modalOpen} closeModal={handleClose} />
 				</>
 			)}
-			<PageFooter>Made with ❤️ by Ben L.</PageFooter>
+			<PageFooter>👹The websocket is from EC2 (free tier sorry🥲) so the strong delay makes it very <b style={{color: "red"}}>unstable!</b></PageFooter>
 		</Container>
 	);
 };
@@ -101,6 +101,7 @@ const Container = styled.main`
 `;
 
 const PageFooter = styled.footer`
+	font-size: 1.3rem;
 	text-align: center;
 	padding: 5px 10px;
 	position: absolute;
