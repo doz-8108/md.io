@@ -1,7 +1,6 @@
 <img width="195" alt="mdio-logo" src="https://user-images.githubusercontent.com/40817247/172797406-e4a94e01-563b-444b-a2c8-10ba46f90473.png">
 
-> The tool aims at being a helpful assistant for those developers 
-> who want to discuss and share their thoughts.
+> A real-time collaborative Markdown editor ✍️
 
 &nbsp;  
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
@@ -40,6 +39,5 @@
 ![image](https://user-images.githubusercontent.com/40817247/172757287-0a7caa2c-5925-49c9-a920-84779c956b73.png)
 
 ## Views / Future works
-- CodeMirror is a old tool and the documentation is not detailed enough
+- CodeMirror is hard though I can still learn many Regex...
 - ‼️The websocket hosted on EC2 (free tier🥲) somehow has a very strog delay that makes it very unstable...
-- BTW, learn many about regex while working in this...
