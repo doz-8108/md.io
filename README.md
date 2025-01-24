@@ -14,7 +14,7 @@
 > edit markdown files conveniently.
 
 &nbsp;  
-🔧 **Easy Tools**
+🔧 **All Toos You Need**
 &nbsp;  
 ![image](https://user-images.githubusercontent.com/40817247/172755759-dfd12da9-bf45-4b20-850e-4edf4a309a0b.png) 
 
@@ -24,20 +24,19 @@
 ![image](https://user-images.githubusercontent.com/40817247/172755979-cf6bb5d9-29b9-4c0c-8002-d7d8094aa70c.png)
 
 &nbsp;  
-✅ **Auto Save**
+✅ **Auto Saving**
 &nbsp;  
 ![image](https://user-images.githubusercontent.com/40817247/172756578-be3bfded-9a50-4f63-9cc3-241dd8745780.png)
 
 &nbsp;  
-👭 **File sharing**
+👭 **Live Sharing**
 &nbsp;  
 ![image](https://user-images.githubusercontent.com/40817247/172757027-a1f49377-93aa-412e-a62f-2eeb89618e95.png)
 
 &nbsp;  
-👋 **Drag and drop upload image**
+👋 **Drag & drop to Upload Image**
 &nbsp;  
 ![image](https://user-images.githubusercontent.com/40817247/172757287-0a7caa2c-5925-49c9-a920-84779c956b73.png)
 
-## Views / Future works
+## Comments
 - CodeMirror is hard though I can still learn many Regex...
-- ‼️The websocket hosted on EC2 (free tier🥲) somehow has a very strog delay that makes it very unstable...
